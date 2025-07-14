@@ -3,7 +3,7 @@ draft = false
 title = 'About Me'
 +++
 
-Hello! I'm Kenneth(goosbo). I'm 19 and interested in computer graphics, low level programming and cybersecurity. I study at MIT Manipal and play CTFs with Cryptonite(mostly `crypto` and `rev`).
+Hello! I'm Kenneth(goosbo). I'm 19 and interested in computer graphics, low level programming and cybersecurity. I am currently a sophomore at MIT Manipal and play CTFs with Cryptonite(mostly `crypto` and `rev`).
 
 ## Find ME
 
