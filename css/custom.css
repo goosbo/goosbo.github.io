@@ -1,0 +1,81 @@
+/*
+ * FINAL - Corrected Block Menu Styling
+ * ------------------------------------ */
+
+/* 1. Force the main header to align items in a row */
+.header {
+  display: flex;
+  align-items: center; /* Vertically align the logo and menu */
+  flex-wrap: wrap;     /* Allow items to wrap on small screens */
+}
+
+/* 2. Make the logo and the menu container flex items */
+.header__inner {
+  flex-shrink: 0; /* Prevent the logo from shrinking */
+}
+
+.block-menu-container {
+  display: flex;       /* This is from before, it arranges the blocks and scanlines */
+  flex-grow: 1;        /* Make the menu container take all remaining space */
+  align-items: center; /* Vertically align items inside this container too */
+}
+
+/* 3. Style the colored menu blocks and scanlines */
+.block-menu {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.menu-block {
+  padding: 6px 15px;
+  color: #1e1e1e;
+  text-decoration: none;
+  font-family: var(--font-family-monospace);
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: lowercase;
+  border-right: 2px solid var(--background-color);
+  white-space: nowrap;
+}
+
+.menu-block:hover {
+  filter: brightness(1.2);
+  color: #000;
+}
+
+.scanlines {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+}
+
+.scanlines .scanline-seperator::before {
+  content: '||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||';
+  color: var(--theme-color);
+  font-weight: 100;
+  line-height: 1;
+  overflow: hidden;
+  display: block;
+  width: 100%;
+}
+
+/* 4. Hide the theme's original menu structure, which is now replaced */
+.menu {
+  display: none;
+}
+.mobile-menu-trigger {
+  display: none !important;
+}
+
+/*
+ * Styling for the Full-Width Banner
+/*
+ * Styling for the Full-Width Banner
+ * ------------------------------------ */
+.full-width-banner {
+  width: 100%;
+  height: 300px;           /* Adjust this height to your liking */
+  background-size: cover;    /* This makes the image cover the entire area */
+  background-position: center; /* This centers the image */
+  margin-bottom: 2rem;       /* This adds space between the banner and the content */
+}

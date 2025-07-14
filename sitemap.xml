@@ -2,24 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://goosbo.github.io/</loc>
-    <lastmod>2025-07-15T00:52:56+05:30</lastmod>
-  </url><url>
-    <loc>https://goosbo.github.io/posts/</loc>
-    <lastmod>2025-07-15T00:52:56+05:30</lastmod>
-  </url><url>
-    <loc>https://goosbo.github.io/tags/</loc>
-    <lastmod>2025-07-15T00:52:56+05:30</lastmod>
-  </url><url>
-    <loc>https://goosbo.github.io/tags/test/</loc>
-    <lastmod>2025-07-15T00:52:56+05:30</lastmod>
-  </url><url>
-    <loc>https://goosbo.github.io/posts/test_post/</loc>
-    <lastmod>2025-07-15T00:52:56+05:30</lastmod>
-  </url><url>
-    <loc>https://goosbo.github.io/tags/wee/</loc>
-    <lastmod>2025-07-15T00:52:56+05:30</lastmod>
+    <loc>https://goosbo.github.io/about/</loc>
   </url><url>
     <loc>https://goosbo.github.io/categories/</loc>
+  </url><url>
+    <loc>https://goosbo.github.io/tags/crypto/</loc>
+  </url><url>
+    <loc>https://goosbo.github.io/posts/cryptoctf2025/</loc>
+  </url><url>
+    <loc>https://goosbo.github.io/tags/ctf/</loc>
+  </url><url>
+    <loc>https://goosbo.github.io/</loc>
+  </url><url>
+    <loc>https://goosbo.github.io/posts/</loc>
+  </url><url>
+    <loc>https://goosbo.github.io/tags/</loc>
   </url>
 </urlset>
