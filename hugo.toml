@@ -1,0 +1,4 @@
+baseURL = 'https://goosbo.github.io/'
+languageCode = 'en-us'
+title = 'goosblog'
+theme = 're-terminal'
