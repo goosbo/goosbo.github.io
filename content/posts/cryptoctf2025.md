@@ -1,5 +1,6 @@
 +++
 title = "Crypto CTF 2025"
+date = '2025-07-15T04:58:38+05:30'
 cover = ""
 coverCaption = ""
 tags = ["crypto", "ctf"]
