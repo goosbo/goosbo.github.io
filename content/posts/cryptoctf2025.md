@@ -144,3 +144,49 @@ print(long_to_bytes(skey))
 ```
 
 flag: `CCTF{4fFin3Ly_r3lA7eD_n0nCE5_aR3_!n5eCuR3!}`
+
+# Silky
+
+Essentially two different arrays are generated: key which is a 19 element array of random integers ranging from `-5 to 5` and R an array of many 19 element arrays containing integers ranging from `550 to -550`. One key point is that for each element of an array in R, `R[i]-key[i]` is within the bounds -550 to 550. To solve this I found the minimum and maximum values at a particular index in each array, and found their average which gave the key element at that index. This is because for the condition to hold true with R containing a lot of array samples, the mean of min and max should be centered around the actual key value.
+
+```python
+from pwn import *
+import math
+import re
+
+r = remote("91.107.252.0", 31131)
+min_vals = [math.inf] * 19
+max_vals = [-math.inf] * 19
+
+r.recvuntil(b"[Q]uit")
+
+for i in range(10):
+    r.sendline(b'm')
+    response = r.recvuntil(b"[Q]uit", timeout=10).decode(errors = 'ignore')
+    for line in response.splitlines():
+        if line.strip().startswith('\u2503'):
+            line = line.strip().lstrip('\u2503').strip()
+            numbers = [int(n) for n in re.findall(r'-?\d+', line)]
+            for j in range(0, len(numbers), 19):
+                vector = numbers[j:j + 19]
+                if len(vector) == 19:
+                    for k in range(19):
+                        if vector[k] < min_vals[k]:
+                            min_vals[k] = vector[k]
+                        if vector[k] > max_vals[k]:
+                            max_vals[k] = vector[k]
+
+key = []
+for i in range(19):
+    key.append(round((min_vals[i] + max_vals[i]) / 2.0))
+
+key = ",".join([str(k) for k in key])
+
+r.sendline(b'g')
+r.recvuntil(b'Please submit the secret key:')
+r.sendline(key.encode())
+r.recvline()
+print(r.recvline())
+```
+
+flag: `CCTF{k3Y_R3c0vEry_4TtaCk_On_A_l3AkY_5e4Si9n!}`
