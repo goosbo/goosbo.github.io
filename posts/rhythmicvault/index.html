@@ -2,19 +2,11 @@
 <html lang="en">
 <head>
   
-    <title>World Wide CTF 2025 - Rhythmic Vault Writeup :: goosblog</title>
+    <title>World Wide CTF 2025 - Rhythmic Vault :: goosblog</title>
   
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Rhythmic Vault Challenge Description Brand new, fun and race-free verification for my flags. NOTE: Owning the game is not neccesary nor helpful in solving the task. Everything you need is oficially downloadable for free!
-Challenge Author: Maximxls
-Points: 500
-Category: Reverse Engineering
-Solves: 3
-Overview We are given a Rhythm Doctor level file.
-Rhythm Doctor is a rhythm game where you heal patients by defibrillating in time to their heartbeats.
-It can be opened with the official (and free) level editor.
-" />
+<meta name="description" content="My writeup for Rhythmic Vault from World Wide CTF 2025 organised by World Wide Flags " />
 <meta name="keywords" content="rev, game" />
 
   <meta name="robots" content="noodp" />
@@ -49,16 +41,8 @@ It can be opened with the official (and free) level editor.
 
 <meta property="og:locale" content="en" />
 <meta property="og:type" content="article" />
-<meta property="og:title" content="World Wide CTF 2025 - Rhythmic Vault Writeup">
-<meta property="og:description" content="Rhythmic Vault Challenge Description Brand new, fun and race-free verification for my flags. NOTE: Owning the game is not neccesary nor helpful in solving the task. Everything you need is oficially downloadable for free!
-Challenge Author: Maximxls
-Points: 500
-Category: Reverse Engineering
-Solves: 3
-Overview We are given a Rhythm Doctor level file.
-Rhythm Doctor is a rhythm game where you heal patients by defibrillating in time to their heartbeats.
-It can be opened with the official (and free) level editor.
-" />
+<meta property="og:title" content="World Wide CTF 2025 - Rhythmic Vault">
+<meta property="og:description" content="My writeup for Rhythmic Vault from World Wide CTF 2025 organised by World Wide Flags " />
 <meta property="og:url" content="https://goosbo.github.io/posts/rhythmicvault/" />
 <meta property="og:site_name" content="goosblog" />
 
@@ -144,7 +128,7 @@ It can be opened with the official (and free) level editor.
     
 <article class="post">
   <h1 class="post-title">
-    <a href="https://goosbo.github.io/posts/rhythmicvault/">World Wide CTF 2025 - Rhythmic Vault Writeup</a>
+    <a href="https://goosbo.github.io/posts/rhythmicvault/">World Wide CTF 2025 - Rhythmic Vault</a>
   </h1>
   <div class="post-meta"><time class="post-date">2025-07-29</time>
     
@@ -178,9 +162,9 @@ It can be opened with the official (and free) level editor.
 <blockquote>
 <p>Rhythm Doctor is a rhythm game where you heal patients by defibrillating in time to their heartbeats.</p></blockquote>
 <p>It can be opened with the official (and free) <a href="https://giacomopc.itch.io/rdle">level editor</a>.</p>
-<p><img src="https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/images/levelsettings.png" alt="level settings"></p>
+<p><img src="/images/levelsettings.png" alt="level settings"></p>
 <p>On navigating to the level settings in the editor we get our first clue- <code>flag is in big-endian words</code>. We can also run the game through the editor and seemed to go through 16 &ldquo;rounds&rdquo; and then displayed <code>Incorrect</code>.</p>
-<p><img src="https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/images/actions-tab.png" alt="actions tab"></p>
+<p><img src="/images/actions-tab.png" alt="actions tab"></p>
 <p>The actions tab displayed hundreds of tag-like blocks in the bottom section and had variables from <code>i1</code> to <code>i8</code> displayed with the changing values. None of this made any sense so first I had to figure out what all of this meant.</p>
 <h2 id="how-rhythm-doctors-level-editor-works">How Rhythm Doctor&rsquo;s Level Editor Works<a href="#how-rhythm-doctors-level-editor-works" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
 <p>I&rsquo;ll only be going through the small section of the editor that matters for this challenge (specifically tags, variables and conditionals) but these are good resources if you want to explore it further:</p>
