@@ -1,5 +1,5 @@
 +++
-title = "World Wide CTF 2025 - Rhythmic Vault Writeup"
+title = "World Wide CTF 2025 - Rhythmic Vault"
 date = "2025-07-29T22:02:22+05:30"
 author = ""
 authorTwitter = "" #do not include @
@@ -7,7 +7,7 @@ cover = ""
 coverCaption = ""
 tags = ["rev", "game"]
 keywords = ["rev", "game"]
-description = ""
+description = "My writeup for Rhythmic Vault from World Wide CTF 2025 organised by World Wide Flags "
 showFullContent = false
 readingTime = false
 hideComments = false
@@ -36,11 +36,11 @@ We are given a Rhythm Doctor level file.
 
 It can be opened with the official (and free) [level editor](https://giacomopc.itch.io/rdle).
 
-![level settings](https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/images/levelsettings.png)
+![level settings](/images/levelsettings.png)
 
 On navigating to the level settings in the editor we get our first clue- `flag is in big-endian words`. We can also run the game through the editor and seemed to go through 16 "rounds" and then displayed `Incorrect`.
 
-![actions tab](https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/images/actions-tab.png)
+![actions tab](/images/actions-tab.png)
 
 The actions tab displayed hundreds of tag-like blocks in the bottom section and had variables from `i1` to `i8` displayed with the changing values. None of this made any sense so first I had to figure out what all of this meant.
 

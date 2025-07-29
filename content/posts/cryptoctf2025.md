@@ -5,6 +5,7 @@ cover = ""
 coverCaption = ""
 tags = ["crypto", "ctf"]
 keywords = ["cryptography", "ctf","lattices"]
+description = "Writeups for some of the CryptoCTF 2025 challenges I've solved"
 showFullContent = false
 readingTime = true
 hideComments = false

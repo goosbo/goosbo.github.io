@@ -8,7 +8,7 @@
     <language>en</language>
     <lastBuildDate>Tue, 29 Jul 2025 22:02:22 +0530</lastBuildDate><atom:link href="https://goosbo.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>World Wide CTF 2025 - Rhythmic Vault Writeup</title>
+      <title>World Wide CTF 2025 - Rhythmic Vault</title>
       <link>https://goosbo.github.io/posts/rhythmicvault/</link>
       <pubDate>Tue, 29 Jul 2025 22:02:22 +0530</pubDate>
       
@@ -37,9 +37,9 @@
 &lt;blockquote&gt;
 &lt;p&gt;Rhythm Doctor is a rhythm game where you heal patients by defibrillating in time to their heartbeats.&lt;/p&gt;&lt;/blockquote&gt;
 &lt;p&gt;It can be opened with the official (and free) &lt;a href=&#34;https://giacomopc.itch.io/rdle&#34;&gt;level editor&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/images/levelsettings.png&#34; alt=&#34;level settings&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://goosbo.github.io/images/levelsettings.png&#34; alt=&#34;level settings&#34;&gt;&lt;/p&gt;
 &lt;p&gt;On navigating to the level settings in the editor we get our first clue- &lt;code&gt;flag is in big-endian words&lt;/code&gt;. We can also run the game through the editor and seemed to go through 16 &amp;ldquo;rounds&amp;rdquo; and then displayed &lt;code&gt;Incorrect&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/images/actions-tab.png&#34; alt=&#34;actions tab&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://goosbo.github.io/images/actions-tab.png&#34; alt=&#34;actions tab&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The actions tab displayed hundreds of tag-like blocks in the bottom section and had variables from &lt;code&gt;i1&lt;/code&gt; to &lt;code&gt;i8&lt;/code&gt; displayed with the changing values. None of this made any sense so first I had to figure out what all of this meant.&lt;/p&gt;
 &lt;h2 id=&#34;how-rhythm-doctors-level-editor-works&#34;&gt;How Rhythm Doctor&amp;rsquo;s Level Editor Works&lt;/h2&gt;
 &lt;p&gt;I&amp;rsquo;ll only be going through the small section of the editor that matters for this challenge (specifically tags, variables and conditionals) but these are good resources if you want to explore it further:&lt;/p&gt;
