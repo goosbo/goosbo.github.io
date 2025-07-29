@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>World Wide CTF 2025 - Rhythmic Vault Writeup :: goosblog</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Rhythmic Vault Challenge Description Brand new, fun and race-free verification for my flags. NOTE: Owning the game is not neccesary nor helpful in solving the task. Everything you need is oficially downloadable for free!
+Challenge Author: Maximxls
+Points: 500
+Category: Reverse Engineering
+Solves: 3
+Overview We are given a Rhythm Doctor level file.
+Rhythm Doctor is a rhythm game where you heal patients by defibrillating in time to their heartbeats.
+It can be opened with the official (and free) level editor.
+" />
+<meta name="keywords" content="rev, game" />
+
+  <meta name="robots" content="noodp" />
+
+<link rel="canonical" href="https://goosbo.github.io/posts/rhythmicvault/" />
+
+
+
+
+
+
+
+  
+  
+  
+  
+  <link rel="stylesheet" href="https://goosbo.github.io/css/red-local.css">
+
+
+
+
+
+
+
+  <link rel="shortcut icon" href="https://goosbo.github.io/images/pfp.ico">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="World Wide CTF 2025 - Rhythmic Vault Writeup">
+<meta property="og:description" content="Rhythmic Vault Challenge Description Brand new, fun and race-free verification for my flags. NOTE: Owning the game is not neccesary nor helpful in solving the task. Everything you need is oficially downloadable for free!
+Challenge Author: Maximxls
+Points: 500
+Category: Reverse Engineering
+Solves: 3
+Overview We are given a Rhythm Doctor level file.
+Rhythm Doctor is a rhythm game where you heal patients by defibrillating in time to their heartbeats.
+It can be opened with the official (and free) level editor.
+" />
+<meta property="og:url" content="https://goosbo.github.io/posts/rhythmicvault/" />
+<meta property="og:site_name" content="goosblog" />
+
+  
+  
+  <meta property="og:image" content="https://goosbo.github.io/">
+
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="627">
+
+
+  <meta property="article:published_time" content="2025-07-29 22:02:22 &#43;0530 IST" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+</head>
+<body class="red">
+
+
+
+
+<div class="container center headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    goosblog
+  </div>
+</a>
+
+    </div>
+    
+      <ul class="menu menu--mobile">
+  <li class="menu__trigger">Menu&nbsp;▾</li>
+  <li>
+    <ul class="menu__dropdown">
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+      
+    </ul>
+  </li>
+</ul>
+
+    
+    
+  </div>
+  
+    <nav class="navigation-menu">
+  <ul class="navigation-menu__inner menu--desktop">
+    
+      
+        
+          <li><a href="/about" >About</a></li>
+        
+      
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<article class="post">
+  <h1 class="post-title">
+    <a href="https://goosbo.github.io/posts/rhythmicvault/">World Wide CTF 2025 - Rhythmic Vault Writeup</a>
+  </h1>
+  <div class="post-meta"><time class="post-date">2025-07-29</time>
+    
+</div>
+
+  
+    <span class="post-tags">
+      
+      #<a href="https://goosbo.github.io/tags/rev/">rev</a>&nbsp;
+      
+      #<a href="https://goosbo.github.io/tags/game/">game</a>&nbsp;
+      
+    </span>
+  
+  
+
+
+
+  
+
+  <div class="post-content"><div>
+        <h1 id="rhythmic-vault">Rhythmic Vault<a href="#rhythmic-vault" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<h2 id="challenge-description">Challenge Description<a href="#challenge-description" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>Brand new, fun and race-free verification for my flags. NOTE: Owning the game is not neccesary nor helpful in solving the task. Everything you need is oficially downloadable for free!</p>
+<p><strong>Challenge Author:</strong> Maximxls</p>
+<p><strong>Points:</strong> 500</p>
+<p><strong>Category:</strong> Reverse Engineering</p>
+<p><strong>Solves:</strong> 3</p>
+<h2 id="overview">Overview<a href="#overview" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>We are given a Rhythm Doctor level file.</p>
+<blockquote>
+<p>Rhythm Doctor is a rhythm game where you heal patients by defibrillating in time to their heartbeats.</p></blockquote>
+<p>It can be opened with the official (and free) <a href="https://giacomopc.itch.io/rdle">level editor</a>.</p>
+<p><img src="https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/images/levelsettings.png" alt="level settings"></p>
+<p>On navigating to the level settings in the editor we get our first clue- <code>flag is in big-endian words</code>. We can also run the game through the editor and seemed to go through 16 &ldquo;rounds&rdquo; and then displayed <code>Incorrect</code>.</p>
+<p><img src="https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/images/actions-tab.png" alt="actions tab"></p>
+<p>The actions tab displayed hundreds of tag-like blocks in the bottom section and had variables from <code>i1</code> to <code>i8</code> displayed with the changing values. None of this made any sense so first I had to figure out what all of this meant.</p>
+<h2 id="how-rhythm-doctors-level-editor-works">How Rhythm Doctor&rsquo;s Level Editor Works<a href="#how-rhythm-doctors-level-editor-works" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>I&rsquo;ll only be going through the small section of the editor that matters for this challenge (specifically tags, variables and conditionals) but these are good resources if you want to explore it further:</p>
+<ul>
+<li><a href="https://rd-editor-docs.github.io/">rd-editor-docs</a></li>
+<li><a href="https://7thbeat.notion.site/RDCode-Rhythm-Doctor-Coding-and-other-advanced-mechanics-90778b89e5aa441698793e9f85e5786c">rhythm doctor coding</a></li>
+</ul>
+<p>RDCode is using <code>Call Custom Method Event</code> or <code>Custom Conditional Events</code> to essentially write a program in Rhythm Doctor to do various things.</p>
+<p><strong>Variables</strong> - Rhythm Doctor contains a bunch of editable variables that can be modified and used in rdcode:</p>
+<ul>
+<li>10 integer variables (i0-i9)</li>
+<li>10 float variables (f0-f9)</li>
+<li>10 boolean variables (b0-b9)</li>
+<li>buttonPressCount(also an integer)</li>
+</ul>
+<p>These variables can be used in <code>call custom methods</code>, <code>conditionals</code> and <code>floating texts</code> along with basic arithmetic and logical operators.</p>
+<p>In this challenge we mostly care about i0-i9 and f0-f9 and only integer values were stored in the float variables.</p>
+<p><strong>Conditionals</strong> - Self explanatory, they check for conditions to trigger certain actions.</p>
+<p><strong>Tags</strong> - They allow a group of events to be executed together(kinda like functions). They can be disabled, which prevents them from running.</p>
+<p>So by combining all these components actual programs can be created that control the behaviour of the level which is what seems to be going on in this challenge.</p>
+<h2 id="parsing-rdcode">Parsing RDCode<a href="#parsing-rdcode" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>It was not clear what each of the tags were doing through the level editor and how they flowed between each other. I realised that a <code>.rdlevel</code> file is essentially a really big json file with all the tags and conditionals, so I could parse it directly to gain more information on it&rsquo;s working.</p>
+<p>A standard tag in the level file would be something like this:</p>
+<pre tabindex="0"><code>{&#34;bar&#34;: 3, &#34;beat&#34;: 1.399738394220206, &#34;y&#34;: 3, &#34;tag&#34;: &#34;15&#34;, &#34;type&#34;: &#34;TagAction&#34;, &#34;Action&#34;: &#34;Run&#34;, &#34;Tag&#34;: &#34;16&#34;}
+</code></pre><p>It has it&rsquo;s beat location, and also what the action of the tag is - in this case this was tag 15 and it&rsquo;s action was running tag 16. There are various actions like running, enabling or disabling another tag or running a custom method.</p>
+<pre tabindex="0"><code>{&#34;bar&#34;: 3, &#34;beat&#34;: 4.797844782833935, &#34;y&#34;: 0, &#34;tag&#34;: &#34;19&#34;, &#34;type&#34;: &#34;CallCustomMethod&#34;, &#34;methodName&#34;: &#34;i9 = i8&#34;, &#34;executionTime&#34;: &#34;OnBar&#34;, &#34;sortOffset&#34;: 0}
+</code></pre><p>This tag for example set i9 to the value of i8.</p>
+<p>The file also had all it&rsquo;s conditionals at the end like this one:</p>
+<pre tabindex="0"><code>{&#34;type&#34;: &#34;Custom&#34;, &#34;tag&#34;: &#34;&#34;, &#34;name&#34;: &#34;&#34;, &#34;id&#34;: 42, &#34;expression&#34;: &#34;i0 != 0&#34;}
+</code></pre><p>The id of a conditional is important since a tag calls a conditional in the format <code>idd0</code>, for example the above conditional with id 42 is called in the tag below with <code>&quot;if&quot;: &quot;42d0&quot;</code>:</p>
+<pre tabindex="0"><code>{&#34;bar&#34;: 3, &#34;beat&#34;: 2.834561844092942, &#34;y&#34;: 1, &#34;tag&#34;: &#34;142&#34;, &#34;type&#34;: &#34;CallCustomMethod&#34;, &#34;if&#34;: &#34;42d0&#34;, &#34;methodName&#34;: &#34;activeDialogues = 1&#34;, &#34;executionTime&#34;: &#34;OnBar&#34;, &#34;sortOffset&#34;: 0}
+</code></pre><p>With all this information I asked Claude to make a <a href="https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/parse.py">script</a> to parse every tag and conditional and give me a cleaner overview of the rdcode along with the flow of commands. The parsed rdcode is in <a href="https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/parsed_level.txt">parsed_level.txt</a>.</p>
+<h2 id="analysis-of-the-levels-rdcode">Analysis of the Level&rsquo;s RDCode<a href="#analysis-of-the-levels-rdcode" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>So the execution of the program start&rsquo;s from the <code>main</code> tag and each tag might run some instructions and calls another tag(either if some conditons are met or directly). If it ever calls a tag that does not exist, you can consider it to be a break statement and it returns to the outer block(or in this case the tag that called this block of tags).</p>
+<p>Essentially this is the flow of the program:</p>
+<pre tabindex="0"><code>main tag
+initialize i4-i9 and f0-f9 with fake flag values
+initialize i1&lt;-42591 and i2&lt;-i2 = i1 * 27342 % 65537
+start the round loop(runs for 16 rounds)
+    start round
+    run the affine_prepare tag
+    for each variable x from i4 to i9 and f0 to f9:
+        x = (i1*x + i2)%65537
+        run affine_prepare tag
+    end loop
+    shift variables(f9&lt;-f8, f8&lt;-f7....f0&lt;-i9....i4&lt;-f9)
+end loop
+checks each of the variables from i4-i9 and f0-f9 with constant values
+if all checks pass - display Correct Flag!
+else - display Incorrect
+</code></pre><p>The <code>affine_prepare</code> tag does the following:</p>
+<pre tabindex="0"><code>i3 = i1
+i2 * 31149 % 65537
+i2 = i3 * 17627 % 65537
+
+if i1 &gt; 32766 -&gt; i1 = i1/3
+</code></pre><p>Each of the flag variable(i4-i9 and f0-f9) contains two bytes of the flag converted to integers(this is where the initial clue comes in to play). The flag currently stored comes out to be <code>wwf{fakefakefakefakefakefakefak}</code>.</p>
+<p>Now with this our goal finally becomes clear, we need to find what the flag variables need to be initialized with such that it passes all the final checks.</p>
+<h2 id="solving-the-challenge">Solving the Challenge<a href="#solving-the-challenge" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>First we need to simulate what is happening in RDCode in python. This should have been an easy task, but it took a lot of my time and painstaking debugging. The reason for this is because RDCode&rsquo;s <code>/</code> operator automatically rounds the number unlike python&rsquo;s <code>//</code> and because we are dealing with modular math, even a difference of one vastly changes the final output. This was fixed by using <code>int(round(a/b))</code> instead.</p>
+<p>Simulation Script:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># Initial setup</span>
+</span></span><span style="display:flex;"><span>i1 <span style="color:#f92672">=</span> <span style="color:#ae81ff">42591</span>
+</span></span><span style="display:flex;"><span>i2 <span style="color:#f92672">=</span> i1 <span style="color:#f92672">*</span> <span style="color:#ae81ff">27342</span> <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>i3 <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>i_vars <span style="color:#f92672">=</span> [<span style="color:#ae81ff">0</span>] <span style="color:#f92672">*</span> <span style="color:#ae81ff">10</span>  <span style="color:#75715e"># i0 to i9, used only indices 4-9</span>
+</span></span><span style="display:flex;"><span>f_vars <span style="color:#f92672">=</span> [<span style="color:#ae81ff">0</span>] <span style="color:#f92672">*</span> <span style="color:#ae81ff">10</span>  <span style="color:#75715e"># f0 to f9</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># initial fake flag values</span>
+</span></span><span style="display:flex;"><span>i_vars[<span style="color:#ae81ff">4</span>:<span style="color:#ae81ff">10</span>] <span style="color:#f92672">=</span> [<span style="color:#ae81ff">30583</span>, <span style="color:#ae81ff">26235</span>, <span style="color:#ae81ff">26209</span>, <span style="color:#ae81ff">27493</span>, <span style="color:#ae81ff">26209</span>, <span style="color:#ae81ff">27493</span>]
+</span></span><span style="display:flex;"><span>f_vars[<span style="color:#ae81ff">0</span>:<span style="color:#ae81ff">10</span>] <span style="color:#f92672">=</span> [<span style="color:#ae81ff">26209</span>, <span style="color:#ae81ff">27493</span>, <span style="color:#ae81ff">26209</span>, <span style="color:#ae81ff">27493</span>, <span style="color:#ae81ff">26209</span>, <span style="color:#ae81ff">27493</span>, <span style="color:#ae81ff">26209</span>, <span style="color:#ae81ff">27493</span>, <span style="color:#ae81ff">26209</span>, <span style="color:#ae81ff">27517</span>]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Initial affine prepare</span>
+</span></span><span style="display:flex;"><span>i3 <span style="color:#f92672">=</span> i1
+</span></span><span style="display:flex;"><span>i1 <span style="color:#f92672">=</span> (i2 <span style="color:#f92672">*</span> <span style="color:#ae81ff">31149</span>) <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>i2 <span style="color:#f92672">=</span> (i3 <span style="color:#f92672">*</span> <span style="color:#ae81ff">17627</span>) <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> i1 <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">32766</span>:
+</span></span><span style="display:flex;"><span>    i1 <span style="color:#f92672">=</span> int(round(i1 <span style="color:#f92672">/</span> <span style="color:#ae81ff">3</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># 16 rounds simulation</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> round_num <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">16</span>):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> j <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">10</span>):
+</span></span><span style="display:flex;"><span>        i3 <span style="color:#f92672">=</span> i1 <span style="color:#f92672">*</span> i_vars[j] <span style="color:#f92672">+</span> i2
+</span></span><span style="display:flex;"><span>        i_vars[j] <span style="color:#f92672">=</span> i3 <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># affine prepare</span>
+</span></span><span style="display:flex;"><span>        i3 <span style="color:#f92672">=</span> i1
+</span></span><span style="display:flex;"><span>        i1 <span style="color:#f92672">=</span> (i2 <span style="color:#f92672">*</span> <span style="color:#ae81ff">31149</span>) <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>        i2 <span style="color:#f92672">=</span> (i3 <span style="color:#f92672">*</span> <span style="color:#ae81ff">17627</span>) <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> i1 <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">32766</span>:
+</span></span><span style="display:flex;"><span>            i1 <span style="color:#f92672">=</span> int(round(i1 <span style="color:#f92672">/</span> <span style="color:#ae81ff">3</span>))
+</span></span><span style="display:flex;"><span>        i3 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> j <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">10</span>):
+</span></span><span style="display:flex;"><span>        i3 <span style="color:#f92672">=</span> i1 <span style="color:#f92672">*</span> f_vars[j] <span style="color:#f92672">+</span> i2
+</span></span><span style="display:flex;"><span>        f_vars[j] <span style="color:#f92672">=</span> i3 <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># affine prepare</span>
+</span></span><span style="display:flex;"><span>        i3 <span style="color:#f92672">=</span> i1
+</span></span><span style="display:flex;"><span>        i1 <span style="color:#f92672">=</span> i2 <span style="color:#f92672">*</span> <span style="color:#ae81ff">31149</span> <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>        i2 <span style="color:#f92672">=</span> i3 <span style="color:#f92672">*</span> <span style="color:#ae81ff">17627</span> <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> i1 <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">32766</span>:
+</span></span><span style="display:flex;"><span>            i1 <span style="color:#f92672">=</span> int(round(i1 <span style="color:#f92672">/</span> <span style="color:#ae81ff">3</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Shift operation </span>
+</span></span><span style="display:flex;"><span>    i3 <span style="color:#f92672">=</span> f_vars[<span style="color:#ae81ff">9</span>]
+</span></span><span style="display:flex;"><span>    all_vars <span style="color:#f92672">=</span> f_vars <span style="color:#f92672">+</span> i_vars[<span style="color:#ae81ff">4</span>:<span style="color:#ae81ff">10</span>] 
+</span></span><span style="display:flex;"><span>    all_vars <span style="color:#f92672">=</span> [all_vars[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]] <span style="color:#f92672">+</span> all_vars[:<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]  
+</span></span><span style="display:flex;"><span>    f_vars <span style="color:#f92672">=</span> all_vars[:<span style="color:#ae81ff">10</span>]
+</span></span><span style="display:flex;"><span>    i_vars[<span style="color:#ae81ff">4</span>:<span style="color:#ae81ff">10</span>] <span style="color:#f92672">=</span> all_vars[<span style="color:#ae81ff">10</span>:]
+</span></span><span style="display:flex;"><span>    i3 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Round </span><span style="color:#e6db74">{</span>round_num <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#e6db74">}</span><span style="color:#e6db74">:&#34;</span>)
+</span></span><span style="display:flex;"><span>    print(<span style="color:#f92672">*</span>f_vars, <span style="color:#f92672">*</span>i_vars[<span style="color:#ae81ff">4</span>:<span style="color:#ae81ff">10</span>])
+</span></span></code></pre></div><p>After making a valid simulation that matched the level&rsquo;s rdcode, I found an important observation.</p>
+<p>So the final constraints for each of the variables are:</p>
+<pre tabindex="0"><code>i4==33601 i5==10760 i6==62873 i7==63911 i8==39745 i9==62471 f0==65158 f1==29652 f2==39777 f3==12164 f4==20416 f5==33945 f6==18465 f7==17245 f8==13049 f9==40799
+</code></pre><p>But even with the fake flag values, the simulation was getting the same final i4 and i5 values as the contraints. This was because each variable represented two characters, so i4 and i5 represented the flag wrapper <code>ww</code> and <code>f{</code> which was the same for both the fake flag and the actual flag.</p>
+<p>The reason this is important is because it meant that the final output of one variable is independent of the initial values in the other variables and it only depends on two factors: initial value in that variable and index of the variable(consider i4 to be index 0 and f9 to be index 15).</p>
+<p>In each round the values in the variables are shifted to the variable on the left, but since there are 16 variables in total and 16 rounds, by the end of all the rounds it comes back to the initial variable.</p>
+<p>We know that the max initial value in each variable is <code>65537</code> due to the modulus used in calculation, so we can brute the initial value in each variable separately until it matches the constraint. Once we find all the initial values for each of the flag variables, we can convert each of them to bytes and get the flag!</p>
+<h2 id="final-solve-script">Final Solve Script<a href="#final-solve-script" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">brute</span>(idx, val):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">65537</span>):
+</span></span><span style="display:flex;"><span>        i1 <span style="color:#f92672">=</span> <span style="color:#ae81ff">42591</span>
+</span></span><span style="display:flex;"><span>        i2 <span style="color:#f92672">=</span> i1 <span style="color:#f92672">*</span> <span style="color:#ae81ff">27342</span> <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>        i3 <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        i_vars <span style="color:#f92672">=</span> [<span style="color:#ae81ff">0</span>] <span style="color:#f92672">*</span> <span style="color:#ae81ff">10</span>  
+</span></span><span style="display:flex;"><span>        f_vars <span style="color:#f92672">=</span> [<span style="color:#ae81ff">0</span>] <span style="color:#f92672">*</span> <span style="color:#ae81ff">10</span> 
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> idx <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">6</span>:
+</span></span><span style="display:flex;"><span>            i_vars[idx<span style="color:#f92672">+</span><span style="color:#ae81ff">4</span>] <span style="color:#f92672">=</span> x  
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>            f_vars[idx<span style="color:#f92672">-</span><span style="color:#ae81ff">6</span>] <span style="color:#f92672">=</span> x
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        i3 <span style="color:#f92672">=</span> i1
+</span></span><span style="display:flex;"><span>        i1 <span style="color:#f92672">=</span> (i2 <span style="color:#f92672">*</span> <span style="color:#ae81ff">31149</span>) <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>        i2 <span style="color:#f92672">=</span> (i3 <span style="color:#f92672">*</span> <span style="color:#ae81ff">17627</span>) <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> i1 <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">32766</span>:
+</span></span><span style="display:flex;"><span>            i1 <span style="color:#f92672">=</span> int(round(i1 <span style="color:#f92672">/</span> <span style="color:#ae81ff">3</span>)) 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">16</span>):
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> j <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">10</span>):
+</span></span><span style="display:flex;"><span>                i3 <span style="color:#f92672">=</span> i1 <span style="color:#f92672">*</span> i_vars[j] <span style="color:#f92672">+</span> i2
+</span></span><span style="display:flex;"><span>                i_vars[j] <span style="color:#f92672">=</span> i3 <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                i3 <span style="color:#f92672">=</span> i1
+</span></span><span style="display:flex;"><span>                i1 <span style="color:#f92672">=</span> (i2 <span style="color:#f92672">*</span> <span style="color:#ae81ff">31149</span>) <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>                i2 <span style="color:#f92672">=</span> (i3 <span style="color:#f92672">*</span> <span style="color:#ae81ff">17627</span>) <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span> i1 <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">32766</span>:
+</span></span><span style="display:flex;"><span>                    i1 <span style="color:#f92672">=</span> int(round(i1 <span style="color:#f92672">/</span> <span style="color:#ae81ff">3</span>)) 
+</span></span><span style="display:flex;"><span>                i3 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">for</span> j <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">10</span>):
+</span></span><span style="display:flex;"><span>                i3 <span style="color:#f92672">=</span> i1 <span style="color:#f92672">*</span> f_vars[j] <span style="color:#f92672">+</span> i2
+</span></span><span style="display:flex;"><span>                f_vars[j] <span style="color:#f92672">=</span> i3 <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                i3 <span style="color:#f92672">=</span> i1
+</span></span><span style="display:flex;"><span>                i1 <span style="color:#f92672">=</span> i2 <span style="color:#f92672">*</span> <span style="color:#ae81ff">31149</span> <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>                i2 <span style="color:#f92672">=</span> i3 <span style="color:#f92672">*</span> <span style="color:#ae81ff">17627</span> <span style="color:#f92672">%</span> <span style="color:#ae81ff">65537</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span> i1 <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">32766</span>:
+</span></span><span style="display:flex;"><span>                    i1 <span style="color:#f92672">=</span> int(round(i1 <span style="color:#f92672">/</span> <span style="color:#ae81ff">3</span>)) 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            i3 <span style="color:#f92672">=</span> f_vars[<span style="color:#ae81ff">9</span>]
+</span></span><span style="display:flex;"><span>            temp <span style="color:#f92672">=</span> f_vars[<span style="color:#ae81ff">9</span>]
+</span></span><span style="display:flex;"><span>            f_vars[<span style="color:#ae81ff">9</span>:<span style="color:#ae81ff">0</span>:<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> f_vars[<span style="color:#ae81ff">8</span>::<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] 
+</span></span><span style="display:flex;"><span>            f_vars[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> i_vars[<span style="color:#ae81ff">9</span>]
+</span></span><span style="display:flex;"><span>            i_vars[<span style="color:#ae81ff">9</span>:<span style="color:#ae81ff">4</span>:<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> i_vars[<span style="color:#ae81ff">8</span>:<span style="color:#ae81ff">3</span>:<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] 
+</span></span><span style="display:flex;"><span>            i_vars[<span style="color:#ae81ff">4</span>] <span style="color:#f92672">=</span> temp
+</span></span><span style="display:flex;"><span>            i3 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> idx <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">6</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> i_vars[idx<span style="color:#f92672">+</span><span style="color:#ae81ff">4</span>] <span style="color:#f92672">==</span> val:
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">return</span> x 
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> f_vars[idx<span style="color:#f92672">-</span><span style="color:#ae81ff">6</span>] <span style="color:#f92672">==</span> val:
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">return</span> x
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">None</span>  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>constraints <span style="color:#f92672">=</span> [<span style="color:#ae81ff">33601</span>,<span style="color:#ae81ff">10760</span>,<span style="color:#ae81ff">62873</span>,<span style="color:#ae81ff">63911</span>,<span style="color:#ae81ff">39745</span>,<span style="color:#ae81ff">62471</span>,<span style="color:#ae81ff">65158</span>,<span style="color:#ae81ff">29652</span>,<span style="color:#ae81ff">39777</span>,<span style="color:#ae81ff">12164</span>,<span style="color:#ae81ff">20416</span>,<span style="color:#ae81ff">33945</span>,<span style="color:#ae81ff">18465</span>,<span style="color:#ae81ff">17245</span>,<span style="color:#ae81ff">13049</span>,<span style="color:#ae81ff">40799</span>]
+</span></span><span style="display:flex;"><span>flag <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">16</span>):
+</span></span><span style="display:flex;"><span>    flag <span style="color:#f92672">+=</span> brute(i,constraints[i])<span style="color:#f92672">.</span>to_bytes(<span style="color:#ae81ff">2</span>,<span style="color:#e6db74">&#39;big&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(flag)
+</span></span></code></pre></div><h2 id="flag">Flag<a href="#flag" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<pre tabindex="0"><code>wwf{I4n_1s_s0_pr0ud_0f_y0u_648f}
+</code></pre>
+      </div></div>
+
+
+  
+
+  
+    
+
+  
+</article>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright">
+        <span>© 2025 goosbo</a></span>
+    
+      </div>
+  </div>
+</footer>
+
+
+
+
+
+
+<script type="text/javascript" src="/bundle.min.js"></script>
+
+
+
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>
