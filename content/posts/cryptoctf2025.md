@@ -15,7 +15,7 @@ color = "green" #color from the theme settings
 
 We know that one of the primes used for RSA encryption is `vinad(r,R)` where r is a random 512 bit number and R is a 512 length array of 512 bit random numbers.
 
-The `vinad` function generates a bitstring by concatenating the output of `parinad(x^r)` for each element x of R and it converts this to an integer. The `parinad` function outputs 0 if there are even number a number contains even number of 1 bits or 1 if its odd. An important observation is `parinad(a^b) = parinad(a) ^ parinad(b)`
+The `vinad` function generates a bitstring by concatenating the output of `parinad(x^r)` for each element x of R and it converts this to an integer. The `parinad` function outputs 0 if a number contains even number of 1 bits or 1 if its odd. An important observation is `parinad(a^b) = parinad(a) ^ parinad(b)`
 
 Since `parinad(x)` can only be either 0 or 1, the prime p has only two possible values `vinad(0,R)` or `vinad(1,R)`. Even the value of e has the same two possible values.
 

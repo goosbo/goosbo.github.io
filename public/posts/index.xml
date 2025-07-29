@@ -6,7 +6,235 @@
     <description>Recent content in Posts on goosblog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 15 Jul 2025 04:58:38 +0530</lastBuildDate><atom:link href="https://goosbo.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 29 Jul 2025 22:02:22 +0530</lastBuildDate><atom:link href="https://goosbo.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>World Wide CTF 2025 - Rhythmic Vault Writeup</title>
+      <link>https://goosbo.github.io/posts/rhythmicvault/</link>
+      <pubDate>Tue, 29 Jul 2025 22:02:22 +0530</pubDate>
+      
+      <guid>https://goosbo.github.io/posts/rhythmicvault/</guid>
+      <description>&lt;h1 id=&#34;rhythmic-vault&#34;&gt;Rhythmic Vault&lt;/h1&gt;
+&lt;h2 id=&#34;challenge-description&#34;&gt;Challenge Description&lt;/h2&gt;
+&lt;p&gt;Brand new, fun and race-free verification for my flags. NOTE: Owning the game is not neccesary nor helpful in solving the task. Everything you need is oficially downloadable for free!&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Challenge Author:&lt;/strong&gt; Maximxls&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Points:&lt;/strong&gt; 500&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Category:&lt;/strong&gt; Reverse Engineering&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Solves:&lt;/strong&gt; 3&lt;/p&gt;
+&lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;
+&lt;p&gt;We are given a Rhythm Doctor level file.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Rhythm Doctor is a rhythm game where you heal patients by defibrillating in time to their heartbeats.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;It can be opened with the official (and free) &lt;a href=&#34;https://giacomopc.itch.io/rdle&#34;&gt;level editor&lt;/a&gt;.&lt;/p&gt;</description>
+      <content>&lt;h1 id=&#34;rhythmic-vault&#34;&gt;Rhythmic Vault&lt;/h1&gt;
+&lt;h2 id=&#34;challenge-description&#34;&gt;Challenge Description&lt;/h2&gt;
+&lt;p&gt;Brand new, fun and race-free verification for my flags. NOTE: Owning the game is not neccesary nor helpful in solving the task. Everything you need is oficially downloadable for free!&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Challenge Author:&lt;/strong&gt; Maximxls&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Points:&lt;/strong&gt; 500&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Category:&lt;/strong&gt; Reverse Engineering&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Solves:&lt;/strong&gt; 3&lt;/p&gt;
+&lt;h2 id=&#34;overview&#34;&gt;Overview&lt;/h2&gt;
+&lt;p&gt;We are given a Rhythm Doctor level file.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Rhythm Doctor is a rhythm game where you heal patients by defibrillating in time to their heartbeats.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p&gt;It can be opened with the official (and free) &lt;a href=&#34;https://giacomopc.itch.io/rdle&#34;&gt;level editor&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/images/levelsettings.png&#34; alt=&#34;level settings&#34;&gt;&lt;/p&gt;
+&lt;p&gt;On navigating to the level settings in the editor we get our first clue- &lt;code&gt;flag is in big-endian words&lt;/code&gt;. We can also run the game through the editor and seemed to go through 16 &amp;ldquo;rounds&amp;rdquo; and then displayed &lt;code&gt;Incorrect&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/images/actions-tab.png&#34; alt=&#34;actions tab&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The actions tab displayed hundreds of tag-like blocks in the bottom section and had variables from &lt;code&gt;i1&lt;/code&gt; to &lt;code&gt;i8&lt;/code&gt; displayed with the changing values. None of this made any sense so first I had to figure out what all of this meant.&lt;/p&gt;
+&lt;h2 id=&#34;how-rhythm-doctors-level-editor-works&#34;&gt;How Rhythm Doctor&amp;rsquo;s Level Editor Works&lt;/h2&gt;
+&lt;p&gt;I&amp;rsquo;ll only be going through the small section of the editor that matters for this challenge (specifically tags, variables and conditionals) but these are good resources if you want to explore it further:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://rd-editor-docs.github.io/&#34;&gt;rd-editor-docs&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://7thbeat.notion.site/RDCode-Rhythm-Doctor-Coding-and-other-advanced-mechanics-90778b89e5aa441698793e9f85e5786c&#34;&gt;rhythm doctor coding&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;RDCode is using &lt;code&gt;Call Custom Method Event&lt;/code&gt; or &lt;code&gt;Custom Conditional Events&lt;/code&gt; to essentially write a program in Rhythm Doctor to do various things.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Variables&lt;/strong&gt; - Rhythm Doctor contains a bunch of editable variables that can be modified and used in rdcode:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;10 integer variables (i0-i9)&lt;/li&gt;
+&lt;li&gt;10 float variables (f0-f9)&lt;/li&gt;
+&lt;li&gt;10 boolean variables (b0-b9)&lt;/li&gt;
+&lt;li&gt;buttonPressCount(also an integer)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;These variables can be used in &lt;code&gt;call custom methods&lt;/code&gt;, &lt;code&gt;conditionals&lt;/code&gt; and &lt;code&gt;floating texts&lt;/code&gt; along with basic arithmetic and logical operators.&lt;/p&gt;
+&lt;p&gt;In this challenge we mostly care about i0-i9 and f0-f9 and only integer values were stored in the float variables.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Conditionals&lt;/strong&gt; - Self explanatory, they check for conditions to trigger certain actions.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Tags&lt;/strong&gt; - They allow a group of events to be executed together(kinda like functions). They can be disabled, which prevents them from running.&lt;/p&gt;
+&lt;p&gt;So by combining all these components actual programs can be created that control the behaviour of the level which is what seems to be going on in this challenge.&lt;/p&gt;
+&lt;h2 id=&#34;parsing-rdcode&#34;&gt;Parsing RDCode&lt;/h2&gt;
+&lt;p&gt;It was not clear what each of the tags were doing through the level editor and how they flowed between each other. I realised that a &lt;code&gt;.rdlevel&lt;/code&gt; file is essentially a really big json file with all the tags and conditionals, so I could parse it directly to gain more information on it&amp;rsquo;s working.&lt;/p&gt;
+&lt;p&gt;A standard tag in the level file would be something like this:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;{&amp;#34;bar&amp;#34;: 3, &amp;#34;beat&amp;#34;: 1.399738394220206, &amp;#34;y&amp;#34;: 3, &amp;#34;tag&amp;#34;: &amp;#34;15&amp;#34;, &amp;#34;type&amp;#34;: &amp;#34;TagAction&amp;#34;, &amp;#34;Action&amp;#34;: &amp;#34;Run&amp;#34;, &amp;#34;Tag&amp;#34;: &amp;#34;16&amp;#34;}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;It has it&amp;rsquo;s beat location, and also what the action of the tag is - in this case this was tag 15 and it&amp;rsquo;s action was running tag 16. There are various actions like running, enabling or disabling another tag or running a custom method.&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;{&amp;#34;bar&amp;#34;: 3, &amp;#34;beat&amp;#34;: 4.797844782833935, &amp;#34;y&amp;#34;: 0, &amp;#34;tag&amp;#34;: &amp;#34;19&amp;#34;, &amp;#34;type&amp;#34;: &amp;#34;CallCustomMethod&amp;#34;, &amp;#34;methodName&amp;#34;: &amp;#34;i9 = i8&amp;#34;, &amp;#34;executionTime&amp;#34;: &amp;#34;OnBar&amp;#34;, &amp;#34;sortOffset&amp;#34;: 0}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This tag for example set i9 to the value of i8.&lt;/p&gt;
+&lt;p&gt;The file also had all it&amp;rsquo;s conditionals at the end like this one:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;{&amp;#34;type&amp;#34;: &amp;#34;Custom&amp;#34;, &amp;#34;tag&amp;#34;: &amp;#34;&amp;#34;, &amp;#34;name&amp;#34;: &amp;#34;&amp;#34;, &amp;#34;id&amp;#34;: 42, &amp;#34;expression&amp;#34;: &amp;#34;i0 != 0&amp;#34;}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;The id of a conditional is important since a tag calls a conditional in the format &lt;code&gt;idd0&lt;/code&gt;, for example the above conditional with id 42 is called in the tag below with &lt;code&gt;&amp;quot;if&amp;quot;: &amp;quot;42d0&amp;quot;&lt;/code&gt;:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;{&amp;#34;bar&amp;#34;: 3, &amp;#34;beat&amp;#34;: 2.834561844092942, &amp;#34;y&amp;#34;: 1, &amp;#34;tag&amp;#34;: &amp;#34;142&amp;#34;, &amp;#34;type&amp;#34;: &amp;#34;CallCustomMethod&amp;#34;, &amp;#34;if&amp;#34;: &amp;#34;42d0&amp;#34;, &amp;#34;methodName&amp;#34;: &amp;#34;activeDialogues = 1&amp;#34;, &amp;#34;executionTime&amp;#34;: &amp;#34;OnBar&amp;#34;, &amp;#34;sortOffset&amp;#34;: 0}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;With all this information I asked Claude to make a &lt;a href=&#34;https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/parse.py&#34;&gt;script&lt;/a&gt; to parse every tag and conditional and give me a cleaner overview of the rdcode along with the flow of commands. The parsed rdcode is in &lt;a href=&#34;https://github.com/goosbo/ctf-writeups/blob/main/wwfctf-2025/RhythmicVault/parsed_level.txt&#34;&gt;parsed_level.txt&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;analysis-of-the-levels-rdcode&#34;&gt;Analysis of the Level&amp;rsquo;s RDCode&lt;/h2&gt;
+&lt;p&gt;So the execution of the program start&amp;rsquo;s from the &lt;code&gt;main&lt;/code&gt; tag and each tag might run some instructions and calls another tag(either if some conditons are met or directly). If it ever calls a tag that does not exist, you can consider it to be a break statement and it returns to the outer block(or in this case the tag that called this block of tags).&lt;/p&gt;
+&lt;p&gt;Essentially this is the flow of the program:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;main tag
+initialize i4-i9 and f0-f9 with fake flag values
+initialize i1&amp;lt;-42591 and i2&amp;lt;-i2 = i1 * 27342 % 65537
+start the round loop(runs for 16 rounds)
+    start round
+    run the affine_prepare tag
+    for each variable x from i4 to i9 and f0 to f9:
+        x = (i1*x + i2)%65537
+        run affine_prepare tag
+    end loop
+    shift variables(f9&amp;lt;-f8, f8&amp;lt;-f7....f0&amp;lt;-i9....i4&amp;lt;-f9)
+end loop
+checks each of the variables from i4-i9 and f0-f9 with constant values
+if all checks pass - display Correct Flag!
+else - display Incorrect
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;The &lt;code&gt;affine_prepare&lt;/code&gt; tag does the following:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;i3 = i1
+i2 * 31149 % 65537
+i2 = i3 * 17627 % 65537
+
+if i1 &amp;gt; 32766 -&amp;gt; i1 = i1/3
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Each of the flag variable(i4-i9 and f0-f9) contains two bytes of the flag converted to integers(this is where the initial clue comes in to play). The flag currently stored comes out to be &lt;code&gt;wwf{fakefakefakefakefakefakefak}&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Now with this our goal finally becomes clear, we need to find what the flag variables need to be initialized with such that it passes all the final checks.&lt;/p&gt;
+&lt;h2 id=&#34;solving-the-challenge&#34;&gt;Solving the Challenge&lt;/h2&gt;
+&lt;p&gt;First we need to simulate what is happening in RDCode in python. This should have been an easy task, but it took a lot of my time and painstaking debugging. The reason for this is because RDCode&amp;rsquo;s &lt;code&gt;/&lt;/code&gt; operator automatically rounds the number unlike python&amp;rsquo;s &lt;code&gt;//&lt;/code&gt; and because we are dealing with modular math, even a difference of one vastly changes the final output. This was fixed by using &lt;code&gt;int(round(a/b))&lt;/code&gt; instead.&lt;/p&gt;
+&lt;p&gt;Simulation Script:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Initial setup&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;42591&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;i2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i1 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;27342&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;i_vars &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;  &lt;span style=&#34;color:#75715e&#34;&gt;# i0 to i9, used only indices 4-9&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;f_vars &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;  &lt;span style=&#34;color:#75715e&#34;&gt;# f0 to f9&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# initial fake flag values&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;i_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;:&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#ae81ff&#34;&gt;30583&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;26235&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;26209&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;27493&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;26209&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;27493&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;f_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;:&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#ae81ff&#34;&gt;26209&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;27493&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;26209&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;27493&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;26209&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;27493&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;26209&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;27493&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;26209&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;27517&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Initial affine prepare&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (i2 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;31149&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;i2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (i3 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;17627&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; i1 &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;32766&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; int(round(i1 &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# 16 rounds simulation&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; round_num &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; j &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i1 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; i_vars[j] &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; i2
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i_vars[j] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i3 &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# affine prepare&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (i2 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;31149&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (i3 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;17627&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; i1 &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;32766&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; int(round(i1 &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; j &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i1 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; f_vars[j] &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; i2
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        f_vars[j] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i3 &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;# affine prepare&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i2 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;31149&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i3 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;17627&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; i1 &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;32766&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; int(round(i1 &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;))
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#75715e&#34;&gt;# Shift operation &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; f_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;9&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    all_vars &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; f_vars &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; i_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;:&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;] 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    all_vars &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [all_vars[&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; all_vars[:&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]  
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    f_vars &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; all_vars[:&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    i_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;:&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; all_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;:]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    print(&lt;span style=&#34;color:#e6db74&#34;&gt;f&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Round &lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;{&lt;/span&gt;round_num &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;}&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;:&amp;#34;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    print(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;f_vars, &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;i_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;:&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;])
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;After making a valid simulation that matched the level&amp;rsquo;s rdcode, I found an important observation.&lt;/p&gt;
+&lt;p&gt;So the final constraints for each of the variables are:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;i4==33601 i5==10760 i6==62873 i7==63911 i8==39745 i9==62471 f0==65158 f1==29652 f2==39777 f3==12164 f4==20416 f5==33945 f6==18465 f7==17245 f8==13049 f9==40799
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;But even with the fake flag values, the simulation was getting the same final i4 and i5 values as the contraints. This was because each variable represented two characters, so i4 and i5 represented the flag wrapper &lt;code&gt;ww&lt;/code&gt; and &lt;code&gt;f{&lt;/code&gt; which was the same for both the fake flag and the actual flag.&lt;/p&gt;
+&lt;p&gt;The reason this is important is because it meant that the final output of one variable is independent of the initial values in the other variables and it only depends on two factors: initial value in that variable and index of the variable(consider i4 to be index 0 and f9 to be index 15).&lt;/p&gt;
+&lt;p&gt;In each round the values in the variables are shifted to the variable on the left, but since there are 16 variables in total and 16 rounds, by the end of all the rounds it comes back to the initial variable.&lt;/p&gt;
+&lt;p&gt;We know that the max initial value in each variable is &lt;code&gt;65537&lt;/code&gt; due to the modulus used in calculation, so we can brute the initial value in each variable separately until it matches the constraint. Once we find all the initial values for each of the flag variables, we can convert each of them to bytes and get the flag!&lt;/p&gt;
+&lt;h2 id=&#34;final-solve-script&#34;&gt;Final Solve Script&lt;/h2&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;brute&lt;/span&gt;(idx, val):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; x &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;42591&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i1 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;27342&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i_vars &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;  
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        f_vars &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; idx &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            i_vars[idx&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; x  
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            f_vars[idx&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; x
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (i2 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;31149&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        i2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (i3 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;17627&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; i1 &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;32766&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; int(round(i1 &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;)) 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; _ &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; j &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i1 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; i_vars[j] &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; i2
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                i_vars[j] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i3 &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (i2 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;31149&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                i2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (i3 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;17627&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; i1 &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;32766&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                    i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; int(round(i1 &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;)) 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; j &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i1 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; f_vars[j] &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; i2
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                f_vars[j] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i3 &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i1
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i2 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;31149&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                i2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i3 &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;17627&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;65537&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; i1 &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;32766&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                    i1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; int(round(i1 &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;)) 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; f_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;9&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            temp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; f_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;9&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            f_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;9&lt;/span&gt;:&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;:&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; f_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;::&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;] 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            f_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;9&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            i_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;9&lt;/span&gt;:&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;:&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; i_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;:&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;:&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;] 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            i_vars[&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; temp
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            i3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; idx &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; i_vars[idx&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; val:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; x 
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;else&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; f_vars[idx&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; val:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; x
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;None&lt;/span&gt;  
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;constraints &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#ae81ff&#34;&gt;33601&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;10760&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;62873&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;63911&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;39745&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;62471&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;65158&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;29652&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;39777&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;12164&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;20416&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;33945&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;18465&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;17245&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;13049&lt;/span&gt;,&lt;span style=&#34;color:#ae81ff&#34;&gt;40799&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;flag &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;b&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;16&lt;/span&gt;):
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    flag &lt;span style=&#34;color:#f92672&#34;&gt;+=&lt;/span&gt; brute(i,constraints[i])&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;to_bytes(&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;big&amp;#39;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;print(flag)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;flag&#34;&gt;Flag&lt;/h2&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;wwf{I4n_1s_s0_pr0ud_0f_y0u_648f}
+&lt;/code&gt;&lt;/pre&gt;</content>
+    </item>
+    
     <item>
       <title>Crypto CTF 2025</title>
       <link>https://goosbo.github.io/posts/cryptoctf2025/</link>
@@ -15,10 +243,10 @@
       <guid>https://goosbo.github.io/posts/cryptoctf2025/</guid>
       <description>&lt;h1 id=&#34;vinad&#34;&gt;Vinad&lt;/h1&gt;
 &lt;p&gt;We know that one of the primes used for RSA encryption is &lt;code&gt;vinad(r,R)&lt;/code&gt; where r is a random 512 bit number and R is a 512 length array of 512 bit random numbers.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;vinad&lt;/code&gt; function generates a bitstring by concatenating the output of &lt;code&gt;parinad(x^r)&lt;/code&gt; for each element x of R and it converts this to an integer. The &lt;code&gt;parinad&lt;/code&gt; function outputs 0 if there are even number a number contains even number of 1 bits or 1 if its odd. An important observation is &lt;code&gt;parinad(a^b) = parinad(a) ^ parinad(b)&lt;/code&gt;&lt;/p&gt;</description>
+&lt;p&gt;The &lt;code&gt;vinad&lt;/code&gt; function generates a bitstring by concatenating the output of &lt;code&gt;parinad(x^r)&lt;/code&gt; for each element x of R and it converts this to an integer. The &lt;code&gt;parinad&lt;/code&gt; function outputs 0 if a number contains even number of 1 bits or 1 if its odd. An important observation is &lt;code&gt;parinad(a^b) = parinad(a) ^ parinad(b)&lt;/code&gt;&lt;/p&gt;</description>
       <content>&lt;h1 id=&#34;vinad&#34;&gt;Vinad&lt;/h1&gt;
 &lt;p&gt;We know that one of the primes used for RSA encryption is &lt;code&gt;vinad(r,R)&lt;/code&gt; where r is a random 512 bit number and R is a 512 length array of 512 bit random numbers.&lt;/p&gt;
-&lt;p&gt;The &lt;code&gt;vinad&lt;/code&gt; function generates a bitstring by concatenating the output of &lt;code&gt;parinad(x^r)&lt;/code&gt; for each element x of R and it converts this to an integer. The &lt;code&gt;parinad&lt;/code&gt; function outputs 0 if there are even number a number contains even number of 1 bits or 1 if its odd. An important observation is &lt;code&gt;parinad(a^b) = parinad(a) ^ parinad(b)&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;vinad&lt;/code&gt; function generates a bitstring by concatenating the output of &lt;code&gt;parinad(x^r)&lt;/code&gt; for each element x of R and it converts this to an integer. The &lt;code&gt;parinad&lt;/code&gt; function outputs 0 if a number contains even number of 1 bits or 1 if its odd. An important observation is &lt;code&gt;parinad(a^b) = parinad(a) ^ parinad(b)&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;Since &lt;code&gt;parinad(x)&lt;/code&gt; can only be either 0 or 1, the prime p has only two possible values &lt;code&gt;vinad(0,R)&lt;/code&gt; or &lt;code&gt;vinad(1,R)&lt;/code&gt;. Even the value of e has the same two possible values.&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; Crypto.Util.number &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
