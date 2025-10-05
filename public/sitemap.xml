@@ -2,15 +2,6 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://goosbo.github.io/tags/crypto/</loc>
-    <lastmod>2025-07-31T23:48:38+05:30</lastmod>
-  </url><url>
-    <loc>https://goosbo.github.io/posts/cryptoctf2025/</loc>
-    <lastmod>2025-07-31T23:48:38+05:30</lastmod>
-  </url><url>
-    <loc>https://goosbo.github.io/tags/ctf/</loc>
-    <lastmod>2025-07-31T23:48:38+05:30</lastmod>
-  </url><url>
     <loc>https://goosbo.github.io/tags/game/</loc>
     <lastmod>2025-07-31T23:48:38+05:30</lastmod>
   </url><url>
@@ -34,6 +25,15 @@
   </url><url>
     <loc>https://goosbo.github.io/posts/rhythmicvault/</loc>
     <lastmod>2025-07-29T22:02:22+05:30</lastmod>
+  </url><url>
+    <loc>https://goosbo.github.io/tags/crypto/</loc>
+    <lastmod>2025-07-15T04:58:38+05:30</lastmod>
+  </url><url>
+    <loc>https://goosbo.github.io/posts/cryptoctf2025/</loc>
+    <lastmod>2025-07-15T04:58:38+05:30</lastmod>
+  </url><url>
+    <loc>https://goosbo.github.io/tags/ctf/</loc>
+    <lastmod>2025-07-15T04:58:38+05:30</lastmod>
   </url><url>
     <loc>https://goosbo.github.io/about/</loc>
   </url><url>
