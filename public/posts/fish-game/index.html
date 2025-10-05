@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>Kaspersky CTF 2025 - Fish Game :: goosblog</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="writeup for Fish Game from Kaspersky CTF 2025" />
+<meta name="keywords" content=", " />
+
+  <meta name="robots" content="noodp" />
+
+<link rel="canonical" href="https://goosbo.github.io/posts/fish-game/" />
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="https://goosbo.github.io/styles.css">
+
+
+
+
+
+
+
+  <link rel="shortcut icon" href="https://goosbo.github.io/images/pfp.ico">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Kaspersky CTF 2025 - Fish Game">
+<meta property="og:description" content="writeup for Fish Game from Kaspersky CTF 2025" />
+<meta property="og:url" content="https://goosbo.github.io/posts/fish-game/" />
+<meta property="og:site_name" content="goosblog" />
+
+  
+  
+  <meta property="og:image" content="https://goosbo.github.io/">
+
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="627">
+
+
+  <meta property="article:published_time" content="2025-07-31 23:48:38 &#43;0530 IST" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+</head>
+<body class="blue">
+
+
+
+
+<div class="container center headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="/">
+  <div class="logo">
+    goosblog
+  </div>
+</a>
+
+    </div>
+    
+      <ul class="menu menu--mobile">
+  <li class="menu__trigger">Menu&nbsp;▾</li>
+  <li>
+    <ul class="menu__dropdown">
+      
+        
+          <li><a href="/about">About</a></li>
+        
+      
+      
+    </ul>
+  </li>
+</ul>
+
+    
+    
+  </div>
+  
+    <nav class="navigation-menu">
+  <ul class="navigation-menu__inner menu--desktop">
+    
+      
+        
+          <li><a href="/about" >About</a></li>
+        
+      
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<article class="post">
+  <h1 class="post-title">
+    <a href="https://goosbo.github.io/posts/fish-game/">Kaspersky CTF 2025 - Fish Game</a>
+  </h1>
+  <div class="post-meta"><time class="post-date">2025-07-31</time>
+    
+</div>
+
+  
+    <span class="post-tags">
+      
+      #<a href="https://goosbo.github.io/tags/game/">game</a>&nbsp;
+      
+      #<a href="https://goosbo.github.io/tags/rev/">rev</a>&nbsp;
+      
+      #<a href="https://goosbo.github.io/tags/godot/">godot</a>&nbsp;
+      
+    </span>
+  
+  
+
+
+
+  
+
+  <div class="post-content"><div>
+        <h1 id="fish-game">Fish Game<a href="#fish-game" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h1>
+<p>Domain: Reverse Engineering</p>
+<p>Points: 50</p>
+<h2 id="given-information">Given Information<a href="#given-information" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<blockquote>
+<p>I want to play a game together. I also like fish.</p>
+<p><a href="https://storage.yandexcloud.net/kasperskyctf/game-9ae73bf428610fbc.exe">https://storage.yandexcloud.net/kasperskyctf/game-9ae73bf428610fbc.exe</a></p></blockquote>
+<h2 id="solution">Solution<a href="#solution" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>We are given a game made with Godot where our score increases by attacking smaller fish but the game ends if a fish touches us. Once dead, the game submits the score to a server and it checks if its higher than 5000. If the check passes, the flag is displayed.</p>
+<p><img src="/images/fishgame.png" alt="fish game"></p>
+<p>We can use a tool called <a href="https://github.com/GDRETools/gdsdecomp/">gdsdecomp</a> that can decompile the game to give godot project files.</p>
+<p>On opening the project in godot, we can see the following code in <code>score.gd</code>.
+<img src="/images/scoregd.png" alt="score.gd"></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-swift" data-lang="swift"><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">_ready</span>() -&gt; void :
+</span></span><span style="display:flex;"><span>    <span style="color:#960050;background-color:#1e0010">$</span>Control <span style="color:#f92672">/</span> VBoxContainer <span style="color:#f92672">/</span> Label.text = <span style="color:#e6db74">&#34;Score: &#34;</span> <span style="color:#f92672">+</span> str(Registry.asd <span style="color:#f92672">/</span> <span style="color:#ae81ff">123</span>)
+</span></span></code></pre></div><p>This function forms the score text which is displayed on death. It is seen that score is stored in <code>Registry.asd</code> as 123 times the actual score.</p>
+<p>The rest of <code>score.gd</code> contains code that sends and receives http requests that validate the score and check if its above the requirement to get a flag. It is not important for solving the challenge as we can just increase the score we get per kill.</p>
+<p>In <code>enemy.gd</code> the following function seems to actually modify the score variable on kill:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-swift" data-lang="swift"><span style="display:flex;"><span><span style="color:#66d9ef">func</span> <span style="color:#a6e22e">_on_body_entered</span>(body: Node2D) -&gt; void :
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> body <span style="color:#66d9ef">is</span> Player:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">var</span> x = <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> xx <span style="color:#66d9ef">in</span> body.get_children():
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> xx <span style="color:#66d9ef">is</span> Enemy:
+</span></span><span style="display:flex;"><span>                x <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>        Registry.asd = x <span style="color:#f92672">*</span> <span style="color:#ae81ff">123</span>
+</span></span><span style="display:flex;"><span>        get_tree().change_scene_to_file(<span style="color:#e6db74">&#34;res://lose.tscn&#34;</span>)
+</span></span></code></pre></div><p>It increments score by 1 each time we kill a smaller fish, then stores it in <code>Registry.asd</code> as <code>score*123</code>.</p>
+<p>So if we change the score to increment by 10000 with <code>x+=10000</code>, all we need is 1 kill to meet the requirement. So I made this change and ran the game in the engine.</p>
+<p><img src="/images/score.png" alt="score"></p>
+<p><img src="/images/flag.png" alt="flag"></p>
+<p>Flag: <code>kaspersky{g1v3_m4n_4_f1sh1ng_r0d_h3_w0u1d_b3_f4d}</code></p>
+
+      </div></div>
+
+
+  
+
+  
+    
+
+  
+</article>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright">
+        <span>© 2025 goosbo</a></span>
+    
+      </div>
+  </div>
+</footer>
+
+
+
+
+
+
+<script type="text/javascript" src="/bundle.min.js"></script>
+
+
+
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>

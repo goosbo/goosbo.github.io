@@ -6,7 +6,56 @@
     <description>Recent content in Rev on goosblog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 29 Jul 2025 22:02:22 +0530</lastBuildDate><atom:link href="https://goosbo.github.io/tags/rev/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 31 Jul 2025 23:48:38 +0530</lastBuildDate><atom:link href="https://goosbo.github.io/tags/rev/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Kaspersky CTF 2025 - Fish Game</title>
+      <link>https://goosbo.github.io/posts/fish-game/</link>
+      <pubDate>Thu, 31 Jul 2025 23:48:38 +0530</pubDate>
+      
+      <guid>https://goosbo.github.io/posts/fish-game/</guid>
+      <description>&lt;h1 id=&#34;fish-game&#34;&gt;Fish Game&lt;/h1&gt;
+&lt;p&gt;Domain: Reverse Engineering&lt;/p&gt;
+&lt;p&gt;Points: 50&lt;/p&gt;
+&lt;h2 id=&#34;given-information&#34;&gt;Given Information&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;I want to play a game together. I also like fish.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://storage.yandexcloud.net/kasperskyctf/game-9ae73bf428610fbc.exe&#34;&gt;https://storage.yandexcloud.net/kasperskyctf/game-9ae73bf428610fbc.exe&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;h2 id=&#34;solution&#34;&gt;Solution&lt;/h2&gt;
+&lt;p&gt;We are given a game made with Godot where our score increases by attacking smaller fish but the game ends if a fish touches us. Once dead, the game submits the score to a server and it checks if its higher than 5000. If the check passes, the flag is displayed.&lt;/p&gt;</description>
+      <content>&lt;h1 id=&#34;fish-game&#34;&gt;Fish Game&lt;/h1&gt;
+&lt;p&gt;Domain: Reverse Engineering&lt;/p&gt;
+&lt;p&gt;Points: 50&lt;/p&gt;
+&lt;h2 id=&#34;given-information&#34;&gt;Given Information&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;I want to play a game together. I also like fish.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://storage.yandexcloud.net/kasperskyctf/game-9ae73bf428610fbc.exe&#34;&gt;https://storage.yandexcloud.net/kasperskyctf/game-9ae73bf428610fbc.exe&lt;/a&gt;&lt;/p&gt;&lt;/blockquote&gt;
+&lt;h2 id=&#34;solution&#34;&gt;Solution&lt;/h2&gt;
+&lt;p&gt;We are given a game made with Godot where our score increases by attacking smaller fish but the game ends if a fish touches us. Once dead, the game submits the score to a server and it checks if its higher than 5000. If the check passes, the flag is displayed.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://goosbo.github.io/images/fishgame.png&#34; alt=&#34;fish game&#34;&gt;&lt;/p&gt;
+&lt;p&gt;We can use a tool called &lt;a href=&#34;https://github.com/GDRETools/gdsdecomp/&#34;&gt;gdsdecomp&lt;/a&gt; that can decompile the game to give godot project files.&lt;/p&gt;
+&lt;p&gt;On opening the project in godot, we can see the following code in &lt;code&gt;score.gd&lt;/code&gt;.
+&lt;img src=&#34;https://goosbo.github.io/images/scoregd.png&#34; alt=&#34;score.gd&#34;&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-swift&#34; data-lang=&#34;swift&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;func&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;_ready&lt;/span&gt;() -&amp;gt; void :
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;$&lt;/span&gt;Control &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; VBoxContainer &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; Label.text = &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Score: &amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; str(Registry.asd &lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;123&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This function forms the score text which is displayed on death. It is seen that score is stored in &lt;code&gt;Registry.asd&lt;/code&gt; as 123 times the actual score.&lt;/p&gt;
+&lt;p&gt;The rest of &lt;code&gt;score.gd&lt;/code&gt; contains code that sends and receives http requests that validate the score and check if its above the requirement to get a flag. It is not important for solving the challenge as we can just increase the score we get per kill.&lt;/p&gt;
+&lt;p&gt;In &lt;code&gt;enemy.gd&lt;/code&gt; the following function seems to actually modify the score variable on kill:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-swift&#34; data-lang=&#34;swift&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;func&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;_on_body_entered&lt;/span&gt;(body: Node2D) -&amp;gt; void :
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; body &lt;span style=&#34;color:#66d9ef&#34;&gt;is&lt;/span&gt; Player:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; x = &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; xx &lt;span style=&#34;color:#66d9ef&#34;&gt;in&lt;/span&gt; body.get_children():
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; xx &lt;span style=&#34;color:#66d9ef&#34;&gt;is&lt;/span&gt; Enemy:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;                x &lt;span style=&#34;color:#f92672&#34;&gt;+=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        Registry.asd = x &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;123&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        get_tree().change_scene_to_file(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;res://lose.tscn&amp;#34;&lt;/span&gt;)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;It increments score by 1 each time we kill a smaller fish, then stores it in &lt;code&gt;Registry.asd&lt;/code&gt; as &lt;code&gt;score*123&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;So if we change the score to increment by 10000 with &lt;code&gt;x+=10000&lt;/code&gt;, all we need is 1 kill to meet the requirement. So I made this change and ran the game in the engine.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://goosbo.github.io/images/score.png&#34; alt=&#34;score&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://goosbo.github.io/images/flag.png&#34; alt=&#34;flag&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Flag: &lt;code&gt;kaspersky{g1v3_m4n_4_f1sh1ng_r0d_h3_w0u1d_b3_f4d}&lt;/code&gt;&lt;/p&gt;
+</content>
+    </item>
+    
     <item>
       <title>World Wide CTF 2025 - Rhythmic Vault</title>
       <link>https://goosbo.github.io/posts/rhythmicvault/</link>
